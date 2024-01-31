@@ -84,7 +84,6 @@ app.post('/addMountain', upload.single('img1'), async (req, res) => {
       res.redirect('http://localhost:5173/home');
     }
   } catch (e) {
-    console.log(e);
     res.status(500).send('에러가 발생했습니다.');
   }
 });
@@ -95,8 +94,6 @@ app.get('/mountain/:id', async (req, res, next) => {
     const result = await db
       .collection('mountain')
       .findOne({ _id: new ObjectId(req.params.id) });
-
-    console.log(result);
 
     if (!result) {
       return res.status(404).json({ error: 'Mountain not found' });
@@ -110,7 +107,6 @@ app.get('/mountain/:id', async (req, res, next) => {
 app.get('/mountain', async (req, res, next) => {
   try {
     const result = await db.collection('mountain').find().toArray();
-    console.log(result);
     res.json(result);
   } catch (error) {
     next(error);
@@ -145,18 +141,88 @@ app.post('/addPost', upload.array('img2', 5), async (req, res, next) => {
         postImg: fileLocations,
         postBody: req.body.post_text,
         postDate: formattedDate,
-        mountainId: req.body.select_mountain,
+        // mountainId: req.body.select_mountain,
+        mountainName: req.body.select_mountain,
       });
-      console.log(req.files);
+      res.redirect('http://localhost:5173/home');
     }
   } catch (error) {
     next(error);
   }
 });
 
+// app.get('/posts', async (req, res, next) => {
+//   try {
+//     const result = await db.collection('posts').find().toArray();
+//     res.json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+
+// app.get('/posts', async (req, res, next) => {
+//   try {
+//     const result = await db
+//       .collection('posts')
+//       .aggregate([
+//         {
+//           $match: {
+//             mountainName: req.query.mountainName,
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: 'mountain',
+//             localField: 'mountainName',
+//             foreignField: 'mountainName',
+//             as: 'mountainInfo',
+//           },
+//         },
+//         {
+//           $unwind: '$mountainInfo',
+//         },
+//         {
+//           $project: {
+//             _id: 0,
+//             userNickName: 1,
+//             postImg: 1,
+//             postBody: 1,
+//             mountainInfo: {
+//               mountainName: 1,
+//               mountainLevel: 1,
+//               mountainAddress: 1,
+//               mountainImgURL: 1,
+//             },
+//           },
+//         },
+//       ])
+//       .toArray();
+
+//     res.json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+
 app.get('/posts', async (req, res, next) => {
   try {
-    const result = await db.collection('posts').find().toArray();
+    const posts = await db.collection('posts').find().toArray();
+
+    const result = await Promise.all(
+      posts.map(async (post) => {
+        const mountainInfo = await db
+          .collection('mountain')
+          .findOne({ mountainName: post.mountainName });
+        return {
+          userNickName: post.userNickName,
+          postImg: post.postImg,
+          postBody: post.postBody,
+          postDate: post.postDate,
+          mountainInfo: mountainInfo || null,
+        };
+      })
+    );
+
     res.json(result);
   } catch (error) {
     next(error);
