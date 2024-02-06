@@ -80,6 +80,7 @@ app.post('/addMountain', upload.single('img1'), async (req, res) => {
         mountainLevel: req.body.mountain_level,
         mountainAddress: req.body.mountain_address,
         mountainImgURL: req.file.location,
+        createDate: new Date(),
       });
       res.redirect('http://localhost:5173/home');
     }
@@ -133,43 +134,45 @@ app.get('/mountain', async (req, res, next) => {
   }
 });
 
-app.post('/addPost', upload.array('img2', 5), async (req, res, next) => {
-  try {
-    const fileLocations = req.files.map((file) => file.location);
-    // const mountainInfo = await db
-    //   .collection('mountain')
-    //   .findOne({ _id: new ObjectId(req.body.select_mountain) });
-    const currentDate = new Date();
-    const formattedHours =
-      currentDate.getHours() < 10
-        ? '0' + currentDate.getHours()
-        : currentDate.getHours();
-    const formattedMinutes =
-      currentDate.getMinutes() < 10
-        ? '0' + currentDate.getMinutes()
-        : currentDate.getMinutes();
+app.post(
+  '/addPost/:selectedMountain',
+  upload.array('img2', 5),
+  async (req, res, next) => {
+    try {
+      const fileLocations = req.files.map((file) => file.location);
 
-    const formattedDate = `${
-      currentDate.getMonth() + 1
-    }월 ${currentDate.getDate()}일 ${formattedHours}:${formattedMinutes}`;
+      const currentDate = new Date();
+      const formattedHours =
+        currentDate.getHours() < 10
+          ? '0' + currentDate.getHours()
+          : currentDate.getHours();
+      const formattedMinutes =
+        currentDate.getMinutes() < 10
+          ? '0' + currentDate.getMinutes()
+          : currentDate.getMinutes();
 
-    if (req.body.post_text == '') {
-      res.send('정보를 모두 입력해주세요.');
-    } else {
-      await db.collection('posts').insertOne({
-        userNickName: '엄홍민수(test)',
-        postImg: fileLocations,
-        postBody: req.body.post_text,
-        postDate: formattedDate,
-        // mountainId: req.body.select_mountain,
-        mountainName: req.body.select_mountain,
-      });
-      res.redirect('http://localhost:5173/home');
+      const formattedDate = `${
+        currentDate.getMonth() + 1
+      }월 ${currentDate.getDate()}일 ${formattedHours}:${formattedMinutes}`;
+
+      if (req.body.post_text == '') {
+        res.send('정보를 모두 입력해주세요.');
+      } else {
+        await db.collection('posts').insertOne({
+          userNickName: '엄홍민수(test)',
+          postImg: fileLocations,
+          postBody: req.body.post_text,
+          postDate: formattedDate,
+          mountainName: req.params.selectedMountain,
+        });
+        console.log(req.body);
+        res.redirect('http://localhost:5173/home');
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // app.get('/posts', async (req, res, next) => {
 //   try {
@@ -242,19 +245,21 @@ app.get('/posts', async (req, res, next) => {
         };
       })
     );
-
+    if (!result) {
+      return res.status(404).json({ error: 'not found' });
+    }
     res.json(result);
   } catch (error) {
     next(error);
   }
 });
 
-app.get('/search', async (req, res) => {
+app.get('/search/:searchKeyWord', async (req, res) => {
   let searchConditions = [
     {
       $search: {
         index: 'mountainName_index',
-        text: { query: req.query.val, path: 'mountainName' },
+        text: { query: req.params.searchKeyWord, path: 'mountainName' },
       },
     },
   ];
@@ -263,6 +268,7 @@ app.get('/search', async (req, res) => {
     .aggregate(searchConditions)
     .toArray();
   res.json(result);
+  console.log(req.params.searchKeyWord);
 });
 
 // app.get('*', function (req, res) {
