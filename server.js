@@ -23,16 +23,15 @@ app.use(
     secret: '암호화에 쓸 비번',
     resave: false,
     saveUninitialized: false,
+    cookie: { maxAge: 60 * 60 * 1000 },
   })
 );
-
 app.use(passport.session());
 
 // 아이디, 비번 일치여부 판단 로직
 passport.use(
   new LocalStrategy(async (id, pw, cb) => {
     try {
-      console.log(id);
       let result = await db.collection('users').findOne({ userName: id });
       if (!result) {
         return cb(null, false, { message: '아이디 DB에 없음' });
@@ -51,6 +50,16 @@ passport.use(
 passport.serializeUser((user, done) => {
   process.nextTick(() => {
     done(null, { id: user._id, username: user.userName });
+  });
+});
+
+passport.deserializeUser(async (user, done) => {
+  let result = await db
+    .collection('users')
+    .findOne({ _id: new ObjectId(user.id) });
+  delete result.password;
+  process.nextTick(() => {
+    done(null, result);
   });
 });
 
@@ -253,7 +262,7 @@ app.post('/login', async (req, res, next) => {
     if (!user) return res.status(401).json(info.message);
     req.logIn(user, (err) => {
       if (err) return next(err);
-      res.redirect('/home');
+      res.redirect('http://localhost:5173/home');
     });
   })(req, res, next);
 });
