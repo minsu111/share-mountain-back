@@ -13,6 +13,47 @@ const cors = require('cors');
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+
+app.use(passport.initialize());
+app.use(
+  session({
+    secret: '암호화에 쓸 비번',
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.session());
+
+// 아이디, 비번 일치여부 판단 로직
+passport.use(
+  new LocalStrategy(async (id, pw, cb) => {
+    try {
+      console.log(id);
+      let result = await db.collection('users').findOne({ userName: id });
+      if (!result) {
+        return cb(null, false, { message: '아이디 DB에 없음' });
+      }
+      if (result.password == pw) {
+        return cb(null, result);
+      } else {
+        return cb(null, false, { message: '비번불일치' });
+      }
+    } catch (error) {
+      res.status(500).send('에러가 발생했습니다.');
+    }
+  })
+);
+
+passport.serializeUser((user, done) => {
+  process.nextTick(() => {
+    done(null, { id: user._id, username: user.userName });
+  });
+});
+
 const { MongoClient, ObjectId } = require('mongodb');
 
 let db;
@@ -50,19 +91,6 @@ const upload = multer({
     },
   }),
 });
-
-//let mountainIdCounter = 1;
-
-// let autoIncObjectId = async (seqName) => {
-//   let result = await db
-//     .collection('counters')
-//     .findOneAndUpdate(
-//       { _id: seqName },
-//       { $inc: { seq_value: 1 } },
-//       { returnDocument: 'after' }
-//     );
-//   return result.value.seq_value;
-// };
 
 app.post('/addMountain', upload.single('img1'), async (req, res) => {
   try {
@@ -174,59 +202,6 @@ app.post(
   }
 );
 
-// app.get('/posts', async (req, res, next) => {
-//   try {
-//     const result = await db.collection('posts').find().toArray();
-//     res.json(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
-// app.get('/posts', async (req, res, next) => {
-//   try {
-//     const result = await db
-//       .collection('posts')
-//       .aggregate([
-//         {
-//           $match: {
-//             mountainName: req.query.mountainName,
-//           },
-//         },
-//         {
-//           $lookup: {
-//             from: 'mountain',
-//             localField: 'mountainName',
-//             foreignField: 'mountainName',
-//             as: 'mountainInfo',
-//           },
-//         },
-//         {
-//           $unwind: '$mountainInfo',
-//         },
-//         {
-//           $project: {
-//             _id: 0,
-//             userNickName: 1,
-//             postImg: 1,
-//             postBody: 1,
-//             mountainInfo: {
-//               mountainName: 1,
-//               mountainLevel: 1,
-//               mountainAddress: 1,
-//               mountainImgURL: 1,
-//             },
-//           },
-//         },
-//       ])
-//       .toArray();
-
-//     res.json(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
 app.get('/posts', async (req, res, next) => {
   try {
     const posts = await db.collection('posts').find().toArray();
@@ -271,6 +246,14 @@ app.get('/search/:searchKeyWord', async (req, res) => {
   console.log(req.params.searchKeyWord);
 });
 
-// app.get('*', function (req, res) {
-//   res.sendFile(path.join(__dirname, '/react-project/build/index.html'));
-// });
+// 로그인
+app.post('/login', async (req, res, next) => {
+  passport.authenticate('local', (error, user, info) => {
+    if (error) return res.status(500).json(error);
+    if (!user) return res.status(401).json(info.message);
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      res.redirect('/home');
+    });
+  })(req, res, next);
+});
