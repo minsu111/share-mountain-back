@@ -1,12 +1,15 @@
 const express = require('express');
 const path = require('path');
 const app = express();
+const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const corsOptions = {
   origin: true,
   credentials: true,
 };
+
+const bcrypt = require('bcrypt');
 
 app.use(express.json());
 const cors = require('cors');
@@ -17,6 +20,8 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 
+const MongoStore = require('connect-mongo');
+
 app.use(passport.initialize());
 app.use(
   session({
@@ -24,6 +29,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 60 * 60 * 1000 },
+    store: MongoStore.create({
+      mongoUrl: process.env.DB_URL,
+      dbName: 'share-mountain',
+    }),
   })
 );
 app.use(passport.session());
@@ -32,11 +41,11 @@ app.use(passport.session());
 passport.use(
   new LocalStrategy(async (id, pw, cb) => {
     try {
-      let result = await db.collection('users').findOne({ userName: id });
+      let result = await db.collection('users').findOne({ emailId: id });
       if (!result) {
         return cb(null, false, { message: '아이디 DB에 없음' });
       }
-      if (result.password == pw) {
+      if (await bcrypt.compare(pw, result.password)) {
         return cb(null, result);
       } else {
         return cb(null, false, { message: '비번불일치' });
@@ -62,8 +71,6 @@ passport.deserializeUser(async (user, done) => {
     done(null, result);
   });
 });
-
-const { MongoClient, ObjectId } = require('mongodb');
 
 let db;
 const url = process.env.DB_URL;
@@ -266,3 +273,36 @@ app.post('/login', async (req, res, next) => {
     });
   })(req, res, next);
 });
+
+// 회원가입
+app.post('/signup', async (req, res) => {
+  try {
+    let hash = await bcrypt.hash(req.body.password, 10);
+    await db.collection('users').insertOne({
+      emailId: req.body.email_id,
+      userName: req.body.username,
+      nickName: req.body.nickname,
+      password: hash,
+    });
+    res.redirect('http://localhost:5173/home');
+  } catch (e) {
+    console.log('가입 실패');
+  }
+});
+
+app.get('/emailCheck/:emailId', async (req, res) => {
+  const userId = await db
+    .collection('users')
+    .findOne({ emailId: req.params.emailId });
+
+  console.log(req.params.emailId);
+
+  if (userId) {
+    res.send('isDuplicated');
+  } else {
+    res.send('isNotDuplicated');
+  }
+});
+
+// 유저 정보 조회
+app.get('/user', async (req, res, next) => {});
