@@ -290,6 +290,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+// 이메일 아이디 중복 체크
 app.get('/emailCheck/:emailId', async (req, res) => {
   const userId = await db
     .collection('users')
@@ -304,5 +305,21 @@ app.get('/emailCheck/:emailId', async (req, res) => {
   }
 });
 
-// 유저 정보 조회
-app.get('/user', async (req, res, next) => {});
+// 닉네임 중복 체크
+app.get('/nicknameCheck/:nickname', async (req, res) => {
+  const userId = await db
+    .collection('users')
+    .findOne({ nickName: req.params.nickname });
+
+  console.log(req.params.nickname);
+
+  if (userId) {
+    res.send('isDuplicated');
+  } else {
+    res.send('isNotDuplicated');
+  }
+});
++(
+  // 유저 정보 조회
+  app.get('/user', async (req, res, next) => {})
+);
