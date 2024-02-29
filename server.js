@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
 const { MongoClient, ObjectId } = require('mongodb');
@@ -11,16 +12,27 @@ const corsOptions = {
 
 const bcrypt = require('bcrypt');
 
+const PostRouter = require('./src/routes/postRouter.js');
+
 app.use(express.json());
 const cors = require('cors');
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
+app.use('/post', PostRouter);
 
 const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 
 const MongoStore = require('connect-mongo');
+
+mongoose.connect(process.env.DB_URL, {
+  dbName: 'share-mountain',
+});
+
+mongoose.connection.on('connected', () =>
+  console.log('정상적으로 MongoDB에 연결되었습니다.')
+);
 
 app.use(passport.initialize());
 app.use(
@@ -218,32 +230,32 @@ app.post(
   }
 );
 
-app.get('/posts', async (req, res, next) => {
-  try {
-    const posts = await db.collection('posts').find().toArray();
+// app.get('/posts', async (req, res, next) => {
+//   try {
+//     const posts = await db.collection('posts').find().toArray();
 
-    const result = await Promise.all(
-      posts.map(async (post) => {
-        const mountainInfo = await db
-          .collection('mountain')
-          .findOne({ mountainName: post.mountainName });
-        return {
-          userNickName: post.userNickName,
-          postImg: post.postImg,
-          postBody: post.postBody,
-          postDate: post.postDate,
-          mountainInfo: mountainInfo || null,
-        };
-      })
-    );
-    if (!result) {
-      return res.status(404).json({ error: 'not found' });
-    }
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+//     const result = await Promise.all(
+//       posts.map(async (post) => {
+//         const mountainInfo = await db
+//           .collection('mountain')
+//           .findOne({ mountainName: post.mountainName });
+//         return {
+//           userNickName: post.userNickName,
+//           postImg: post.postImg,
+//           postBody: post.postBody,
+//           postDate: post.postDate,
+//           mountainInfo: mountainInfo || null,
+//         };
+//       })
+//     );
+//     if (!result) {
+//       return res.status(404).json({ error: 'not found' });
+//     }
+//     res.json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 app.get('/search/:searchKeyWord', async (req, res) => {
   let searchConditions = [
