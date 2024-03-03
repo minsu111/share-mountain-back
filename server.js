@@ -147,45 +147,36 @@ app.post('/addMountain', upload.single('img1'), async (req, res) => {
   }
 });
 
-app.get('/mountain/:id', async (req, res, next) => {
-  try {
-    // const mountainId = Number(req.params.mountainId);
-
-    const result = await db
-      .collection('mountain')
-      .findOne({ _id: new ObjectId(req.params.id) });
-
-    if (!result) {
-      return res.status(404).json({ error: 'Mountain not found' });
-    }
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-app.get('/mountain/:id/posts', async (req, res, next) => {
-  try {
-    const mountainNameData = await db
-      .collection('mountain')
-      .findOne({ _id: new ObjectId(req.params.id) });
-
-    const result = await db
-      .collection('posts')
-      .find({ mountainName: mountainNameData.mountainName });
-
-    if (!result) {
-      return res.status(404).json({ error: 'not found' });
-    }
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// app.get('/mountain', async (req, res, next) => {
+// app.get('/mountain/:id', async (req, res, next) => {
 //   try {
-//     const result = await db.collection('mountain').find().toArray();
+//     // const mountainId = Number(req.params.mountainId);
+
+//     const result = await db
+//       .collection('mountain')
+//       .findOne({ _id: new ObjectId(req.params.id) });
+
+//     if (!result) {
+//       return res.status(404).json({ error: 'Mountain not found' });
+//     }
+//     res.json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+
+// app.get('/mountain/:id/posts', async (req, res, next) => {
+//   try {
+//     const mountainNameData = await db
+//       .collection('mountain')
+//       .findOne({ _id: new ObjectId(req.params.id) });
+
+//     const result = await db
+//       .collection('posts')
+//       .find({ mountainName: mountainNameData.mountainName });
+
+//     if (!result) {
+//       return res.status(404).json({ error: 'not found' });
+//     }
 //     res.json(result);
 //   } catch (error) {
 //     next(error);
@@ -231,33 +222,6 @@ app.post(
     }
   }
 );
-
-// app.get('/posts', async (req, res, next) => {
-//   try {
-//     const posts = await db.collection('posts').find().toArray();
-
-//     const result = await Promise.all(
-//       posts.map(async (post) => {
-//         const mountainInfo = await db
-//           .collection('mountain')
-//           .findOne({ mountainName: post.mountainName });
-//         return {
-//           userNickName: post.userNickName,
-//           postImg: post.postImg,
-//           postBody: post.postBody,
-//           postDate: post.postDate,
-//           mountainInfo: mountainInfo || null,
-//         };
-//       })
-//     );
-//     if (!result) {
-//       return res.status(404).json({ error: 'not found' });
-//     }
-//     res.json(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 
 app.get('/search/:searchKeyWord', async (req, res) => {
   let searchConditions = [

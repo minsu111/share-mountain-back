@@ -1,12 +1,25 @@
 const postModel = require('../db/models/postModel.js');
+const mountainModel = require('../db/models/mountainModel.js');
 
 class PostService {
   async getAllPosts() {
-    return await postModel.findAllPosts();
-  }
+    const posts = await postModel.findAllPosts();
 
-  async getTestPost() {
-    return await postModel.findTest();
+    const result = await Promise.all(
+      posts.map(async (post) => {
+        const mountainInfo = await mountainModel.findOneByName(
+          post.mountainName
+        );
+        return {
+          userNickName: post.userNickName,
+          postImg: post.postImg,
+          postBody: post.postBody,
+          postDate: post.postDate,
+          mountainInfo: mountainInfo || null,
+        };
+      })
+    );
+    return result;
   }
 }
 
