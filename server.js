@@ -147,23 +147,6 @@ app.post('/addMountain', upload.single('img1'), async (req, res) => {
   }
 });
 
-// app.get('/mountain/:id', async (req, res, next) => {
-//   try {
-//     // const mountainId = Number(req.params.mountainId);
-
-//     const result = await db
-//       .collection('mountain')
-//       .findOne({ _id: new ObjectId(req.params.id) });
-
-//     if (!result) {
-//       return res.status(404).json({ error: 'Mountain not found' });
-//     }
-//     res.json(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// });
-
 // app.get('/mountain/:id/posts', async (req, res, next) => {
 //   try {
 //     const mountainNameData = await db

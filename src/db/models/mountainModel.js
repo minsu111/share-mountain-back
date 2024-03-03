@@ -11,6 +11,10 @@ class MountainModel {
   async findOneByName(mountainName) {
     return await Mountain.findOne({ mountainName: mountainName });
   }
+
+  async findOneById(mountainId) {
+    return await Mountain.findOne({ _id: mountainId });
+  }
 }
 
 const mountainModel = new MountainModel();
