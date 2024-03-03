@@ -12,13 +12,15 @@ const corsOptions = {
 
 const bcrypt = require('bcrypt');
 
-const PostRouter = require('./src/routes/postRouter.js');
+const postRouter = require('./src/routes/postRouter.js');
+const mountainRouter = require('./src/routes/mountainRouter.js');
 
 app.use(express.json());
 const cors = require('cors');
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
-app.use('/post', PostRouter);
+app.use('/post', postRouter);
+app.use('/mountain', mountainRouter);
 
 const session = require('express-session');
 const passport = require('passport');
@@ -181,14 +183,14 @@ app.get('/mountain/:id/posts', async (req, res, next) => {
   }
 });
 
-app.get('/mountain', async (req, res, next) => {
-  try {
-    const result = await db.collection('mountain').find().toArray();
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+// app.get('/mountain', async (req, res, next) => {
+//   try {
+//     const result = await db.collection('mountain').find().toArray();
+//     res.json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 app.post(
   '/addPost/:selectedMountain',

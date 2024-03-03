@@ -1,4 +1,4 @@
-import UserSchema from './userSchema.js';
-import PostSchema from './postSchema.js';
+const UserSchema = require('./userSchema.js');
+const PostSchema = require('./postSchema.js');
 
-export { UserSchema, PostSchema };
+module.exports = { UserSchema, PostSchema };

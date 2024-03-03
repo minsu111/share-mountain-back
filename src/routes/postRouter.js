@@ -1,11 +1,11 @@
 const { Router } = require('express');
-const PostService = require('../services/postService.js');
+const postService = require('../services/postService.js');
 
-const PostRouter = Router();
+const postRouter = Router();
 
-// PostRouter.get('/posts', async (req, res, next) => {
+// postRouter.get('/posts', async (req, res, next) => {
 //   try {
-//     const result = await PostService.getAllPosts();
+//     const result = await postService.getAllPosts();
 //     if (!result) {
 //       return res.status(404).json({ error: 'not found' });
 //     }
@@ -15,9 +15,9 @@ const PostRouter = Router();
 //   }
 // });
 
-PostRouter.get('/posts', async (req, res, next) => {
+postRouter.get('/posts', async (req, res, next) => {
   try {
-    const result = await PostService.getAllPosts();
+    const result = await postService.getAllPosts();
     if (!result) {
       return res.status(404).json({ error: 'not found' });
     }
@@ -27,4 +27,4 @@ PostRouter.get('/posts', async (req, res, next) => {
   }
 });
 
-module.exports = PostRouter;
+module.exports = postRouter;

@@ -1,14 +1,14 @@
-const PostModel = require('../db/models/postModel.js');
+const postModel = require('../db/models/postModel.js');
 
 class PostService {
   async getAllPosts() {
-    return await PostModel.findAllPosts();
+    return await postModel.findAllPosts();
   }
 
   async getTestPost() {
-    return await PostModel.findTest();
+    return await postModel.findTest();
   }
 }
 
-const postService = new PostService(PostModel);
+const postService = new PostService(postModel);
 module.exports = postService;
