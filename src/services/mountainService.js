@@ -5,8 +5,22 @@ class MountainService {
     return await mountainModel.findAllMountains();
   }
 
-  async getMountainById(mountainId) {
-    return await mountainModel.findOneById(mountainId);
+  async getMountainByName(mountainName) {
+    return await mountainModel.findOneByName(mountainName);
+  }
+
+  async searchMountain(mountainName) {
+    return await mountainModel.searchByName(mountainName);
+  }
+
+  async addMountainInfo(req) {
+    return await mountainModel.createMountain({
+      mountainName: req.body.mountain_name,
+      mountainLevel: req.body.mountain_level,
+      mountainAddress: req.body.mountain_address,
+      mountainImgURL: req.file.location,
+      createDate: new Date(),
+    });
   }
 }
 

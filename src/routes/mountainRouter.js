@@ -1,30 +1,55 @@
 const { Router } = require('express');
 const mountainService = require('../services/mountainService.js');
+const asyncHandler = require('../middlewares/asyncHandler.js');
+const upload = require('../middlewares/imageUploadHandler.js');
 
 const mountainRouter = Router();
 
-mountainRouter.get('/mountains', async (req, res, next) => {
-  try {
+mountainRouter.get(
+  '/mountains',
+  asyncHandler(async (req, res, next) => {
     const result = await mountainService.getAllMountains();
-    if (!result) {
-      return res.status(404).json({ error: 'not found' });
-    }
     res.json(result);
-  } catch (error) {
-    next(error);
+  })
+);
+
+mountainRouter.get(
+  '/:mountainName',
+  asyncHandler(async (req, res, next) => {
+    const result = await mountainService.getMountainByName(
+      req.params.mountainName
+    );
+
+    res.json(result);
+  })
+);
+
+mountainRouter.get('/search/:searchKeyWord', async (req, res, next) => {
+  try {
+    const result = await mountainService.searchMountain(
+      req.params.searchKeyWord
+    );
+    res.json(result);
+    console.log(req.params.searchKeyWord);
+  } catch (err) {
+    next(err);
   }
 });
 
-mountainRouter.get('/:mountainId', async (req, res, next) => {
-  try {
-    const result = await mountainService.getMountainById(req.params.mountainId);
-    if (!result) {
-      return res.status(404).json({ error: 'not found' });
+mountainRouter.post(
+  '/add/mountainInfo',
+  upload.single('img1'),
+  asyncHandler(async (req, res, next) => {
+    if (
+      req.body.mountain_name == '' ||
+      req.body.mountain_level == '' ||
+      req.body.mountain_address == ''
+    ) {
+      res.send('정보를 모두 입력해주세요.');
     }
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+    await mountainService.addMountainInfo(req);
+    res.redirect('http://localhost:5173/home');
+  })
+);
 
 module.exports = mountainRouter;

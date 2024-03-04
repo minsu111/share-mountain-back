@@ -12,8 +12,20 @@ class MountainModel {
     return await Mountain.findOne({ mountainName: mountainName });
   }
 
-  async findOneById(mountainId) {
-    return await Mountain.findOne({ _id: mountainId });
+  async searchByName(mountainName) {
+    const searchConditions = [
+      {
+        $search: {
+          index: 'mountainName_index',
+          text: { query: mountainName, path: 'mountainName' },
+        },
+      },
+    ];
+    return await Mountain.aggregate(searchConditions);
+  }
+
+  async createMountain(mountainInfo) {
+    return await Mountain.create(mountainInfo);
   }
 }
 

@@ -8,8 +8,12 @@ class PostModel {
     return await Post.find({});
   }
 
-  async findTest() {
-    return await Post.findOne({ _id: '65c1c420e1670bad65294d15' });
+  async findMountainPosts(mountainName) {
+    return await Post.find({ mountainName: mountainName });
+  }
+
+  async createPost(post) {
+    return await Post.create(post);
   }
 }
 const postModel = new PostModel();
