@@ -1,13 +1,21 @@
 const { model } = require('mongoose');
-const UserSchema = require('../schemas/index.js');
+const UserSchema = require('../schemas/userSchema.js');
 
 const User = model('users', UserSchema);
 
 class UserModel {
   async findByEmail(email) {
-    const user = await User.findOne({ email });
-    return user;
+    return await User.findOne({ email });
+  }
+
+  async createUser(userInfo) {
+    return await User.create(userInfo);
+  }
+
+  async findByNickName(nickname) {
+    return await User.findOne({ nickName: nickname });
   }
 }
 
-export default new UserModel();
+const userModel = new UserModel();
+module.exports = userModel;

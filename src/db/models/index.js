@@ -1,3 +1,4 @@
 const PostModel = require('./postModel.js');
+const userModel = require('./userModel.js');
 
-export { PostModel };
+module.exports = { PostModel, userModel };

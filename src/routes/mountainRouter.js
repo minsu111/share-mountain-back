@@ -47,8 +47,7 @@ mountainRouter.post(
     ) {
       res.send('정보를 모두 입력해주세요.');
     }
-    await mountainService.addMountainInfo(req);
-    res.redirect('http://localhost:5173/home');
+    await mountainService.addMountainInfo(req, res);
   })
 );
 
