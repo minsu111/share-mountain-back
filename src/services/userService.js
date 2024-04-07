@@ -59,7 +59,8 @@ class UserService {
       nickName: userInfo.nickname,
       password: hash,
     });
-    res.send('가입완료');
+    res.send('가입성공');
+    // res.redirect('http://localhost:5173/home');
   }
   // 회원가입 -> 이메일 아이디 중복 확인
   async checkEmailId(email) {

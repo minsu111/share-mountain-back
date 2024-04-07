@@ -13,8 +13,11 @@ userRouter.post(
 );
 
 userRouter.post('/signup', async (req, res, next) => {
-  await userService.addNewUser(req.body, res);
-  console.log(req.body);
+  try {
+    await userService.addNewUser(req.body, res);
+  } catch (err) {
+    next(err);
+  }
 });
 
 userRouter.get('/emailCheck/:emailId', async (req, res, nextTick) => {
