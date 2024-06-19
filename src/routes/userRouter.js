@@ -5,12 +5,33 @@ const asyncHandler = require('../middlewares/asyncHandler.js');
 
 const userRouter = Router();
 
+// userRouter.post(
+//   '/login',
+//   asyncHandler(async (req, res, next) => {
+//     return await userService.getUserToken(req.body, res, next);
+//   })
+// );
+
+/**
+ * 로그인 라우터
+ */
 userRouter.post(
   '/login',
   asyncHandler(async (req, res, next) => {
-    return await userService.getUserToken(req.body, res, next);
+    return await userService.login(req.body, res, next);
   })
 );
+
+/**
+ * 로그아웃 라우터
+ */
+userRouter.post('/logout', (req, res, next) => {
+  try {
+    userService.logout(req, res, next);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
 userRouter.post('/signup', async (req, res, next) => {
   try {
